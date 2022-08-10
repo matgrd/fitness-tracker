@@ -37,7 +37,7 @@ export const SnackbarComponent = () => {
   };
 
   return (
-    <Snackbar open={snackbarOpen} autoHideDuration={5000} onClose={handleClose}>
+    <Snackbar open={snackbarOpen} autoHideDuration={8000} onClose={handleClose}>
       <Alert
         onClose={handleClose}
         severity={snackbarType}

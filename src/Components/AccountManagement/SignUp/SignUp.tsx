@@ -16,7 +16,6 @@ import { NewCommonForm } from "src/Components/Form/NewCommonForm";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import { AnalyticsOutlined } from "@mui/icons-material";
 
 export const SignUp = () => {
   const [progress, setProgress] = useState<boolean>(false);
@@ -35,18 +34,6 @@ export const SignUp = () => {
           email: values.email,
           password: values.password,
         });
-
-        if (session) {
-          await supabase.from("profiles").insert(
-            {
-              id: session.user?.id,
-              updated_at: new Date(),
-            },
-            { returning: "minimal" }
-          );
-        }
-
-        error ? console.log(error) : console.log(user);
         dispatch(
           setSnackbar([true, "success", "Check your email for the login link!"])
         );

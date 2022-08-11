@@ -19,6 +19,14 @@ export const Account = ({ session }) => {
   const [website, setWebsite] = useState(null);
   const [avatar_url, setAvatarUrl] = useState(null);
 
+  const [avatar, setAvatar] = useState(null);
+  const onFileChange = (event) => {
+    if (event.currentTarget.files) {
+      const file = event.currentTarget.files[0];
+      setAvatar(file);
+    }
+  };
+
   useEffect(() => {
     getProfile();
   }, [session]);
@@ -62,13 +70,41 @@ export const Account = ({ session }) => {
         setProgress(true);
         const user = supabase.auth.user();
 
-        //await na upload image i get url
+        if (avatar) {
+          const file = avatar.name;
+          const fileExt = file.split(".").pop();
+          const fileName = `${Math.random()}.${fileExt}`;
+          const filePath = `${fileName.slice(2)}`;
+
+          let { error: uploadError } = await supabase.storage
+            .from("avatars")
+            .upload(filePath, avatar);
+
+          const { signedURL } = await supabase.storage
+            .from("avatars")
+            .createSignedUrl(filePath, 31556926);
+
+          const updates = {
+            id: user.id,
+            updated_at: new Date(),
+            username: values.username,
+            avatar_url: signedURL,
+            website: values.website,
+          };
+
+          let { error } = await supabase
+            .from("profiles")
+            .upsert(updates, { returning: "minimal" });
+        }
+
         const updates = {
           id: user.id,
-          ...values,
           updated_at: new Date(),
+          username: values.username,
+          avatar_url: user.avatar_url,
+          website: values.website,
         };
-        //drugi await na insert do bazy
+
         let { error } = await supabase
           .from("profiles")
           .upsert(updates, { returning: "minimal" });
@@ -91,13 +127,9 @@ export const Account = ({ session }) => {
         progress={progress}
         icon={
           <UserAvatar
-            url={avatar_url}
-            onUpload={(url) => {
-              setAvatarUrl(url);
-              formik.onSubmit({ username, website, avatar_url: url });
-            }}
             name={avatar_url}
-            formik={formik}
+            url={avatar_url}
+            onFileChange={onFileChange}
           />
         }
         header="Your profile"
@@ -113,12 +145,13 @@ export const Account = ({ session }) => {
               label={website ? website : "your@website.com"}
               formik={formik}
             />
-            <FormField
+            {/* <input
               name="avatar_url"
               label="Your image"
               type="file"
               formik={formik}
-            />
+              onChange={onFileChange}
+            /> */}
           </>
         }
         buttonText="Update Profile"

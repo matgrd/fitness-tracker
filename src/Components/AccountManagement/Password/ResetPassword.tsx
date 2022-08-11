@@ -8,7 +8,9 @@ import { passwordValidation } from "../ValidationAccountManagement/ValidationAcc
 import { passwordValue } from "../InitialValues/InitialValues";
 import { FormField } from "../../Form/FormField";
 
+import Avatar from "@mui/material/Avatar";
 import LockResetIcon from "@mui/icons-material/LockReset";
+
 import { CommonForm } from "src/Components/Form/CommonForm";
 import ProtectedRoute from "src/Components/ProtectedRoute/ProtectedRoute";
 
@@ -72,7 +74,11 @@ export const ResetPassword = () => {
       <CommonForm
         formik={formik}
         progress={progress}
-        icon={<LockResetIcon />}
+        icon={
+          <Avatar sx={{ m: 2, bgcolor: "#1b7700" }}>
+            <LockResetIcon />
+          </Avatar>
+        }
         headerText="Reset Password"
         formBody={
           <FormField

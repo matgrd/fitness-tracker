@@ -33,8 +33,8 @@ export const UserAvatarCopy = ({ url, size, onUpload }) => {
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
+      const fileExtension = file.name.split(".").pop();
+      const fileName = `${Math.random()}.${fileExtension}`;
       const filePath = `${fileName}`;
 
       let { error: uploadError } = await supabase.storage

@@ -35,7 +35,7 @@ export const CommonForm = ({
             alignItems: "center",
           }}
         >
-          <Avatar sx={{ m: 2, bgcolor: "#1b7700" }}>{icon}</Avatar>
+          {icon}
           <Typography component="h1" variant="h5">
             {headerText}
           </Typography>

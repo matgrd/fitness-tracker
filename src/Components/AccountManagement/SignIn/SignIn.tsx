@@ -88,7 +88,7 @@ export const SignIn = () => {
           <Grid item xs>
             <ForgottenPassword />
           </Grid>
-          <Grid item >
+          <Grid item>
             <Link href="/sign-up" variant="body2">
               Don't have an account? Sign Up
             </Link>

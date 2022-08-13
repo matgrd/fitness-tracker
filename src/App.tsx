@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Route, Routes, BrowserRouter } from "react-router-dom";
 import { supabase } from "./supabaseClient";
 import { Navbar } from "./Components/Navbar/Navbar";
-import { SnackbarComponent } from "./Components/SnackbarComponent/SnackbarComponent";
 
 import { SignIn } from "./Components/AccountManagement/SignIn/SignIn";
 import { SignUp } from "./Components/AccountManagement/SignUp/SignUp";
@@ -12,6 +11,7 @@ import { Account } from "./Components/AccountManagement/Account/Account";
 import { Calendar } from "./Components/Calendar/Calendar";
 import { Location } from "./Components/Location/Location";
 import { Challenges } from "./Components/Challenges/Challenges";
+import { SnackbarComponent } from "./Components/SnackbarComponent/SnackbarComponent";
 
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./Config/ThemeConfig";

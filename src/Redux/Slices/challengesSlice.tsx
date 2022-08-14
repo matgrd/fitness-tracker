@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { supabase } from "src/supabaseClient";
+import type { PayloadAction } from "@reduxjs/toolkit";
 
 export const fetchChallenges = createAsyncThunk(
   "challenges/fetchChallenges",
@@ -28,7 +29,11 @@ const initialState: ChallengesState = {
 export const challengesSlice = createSlice({
   name: "table",
   initialState,
-  reducers: {},
+  reducers: {
+    setStatus: (state: any, action: PayloadAction<string>) => {
+      state.status = action.payload;
+    },
+  },
   extraReducers(builder) {
     builder
       .addCase(fetchChallenges.pending, (state, action) => {
@@ -44,3 +49,5 @@ export const challengesSlice = createSlice({
       });
   },
 });
+
+export const { setStatus } = challengesSlice.actions;

@@ -36,7 +36,6 @@ export const Challenges = () => {
   );
   const challengesData: [] = useAppSelector((state) => state.challenges.data);
 
-  console.log(challengesData);
   useEffect(() => {
     if (challengesStatus === "idle") {
       dispatch(fetchChallenges());
@@ -51,9 +50,14 @@ export const Challenges = () => {
             getMultipleRandom(challengesData, 3).map((challenge: any) => {
               return (
                 <Grid key={challenge.id} item>
-                  <Card sx={{ width: { xs: 250, lg: 400 }, height: 275 }}>
+                  <Card
+                    sx={{
+                      width: { xs: 250, lg: 400 },
+                      height: { xs: 275, lg: 375 },
+                    }}
+                  >
                     <CardMedia
-                      sx={{ height: 140 }}
+                      sx={{ height: { xs: 140, lg: 250 } }}
                       image={challenge.challenge_url}
                     />
                     <CardContent>

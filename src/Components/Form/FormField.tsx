@@ -5,7 +5,7 @@ interface FormFieldProp {
   name: string;
   label?: string;
   autoComplete?: string;
-  type?: string;
+  type?: "text" | "number" | "email" | "password";
   formik: any;
   margin?: any;
 }

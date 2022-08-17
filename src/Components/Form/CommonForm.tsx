@@ -2,7 +2,6 @@ import { FormikProvider } from "formik";
 import { Loading } from "../Loading/Loading";
 
 import Box from "@mui/material/Box";
-import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";

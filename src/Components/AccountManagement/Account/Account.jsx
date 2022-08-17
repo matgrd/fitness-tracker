@@ -8,24 +8,18 @@ import {
   websiteValidation,
   avatarURLValidation,
 } from "../ValidationAccountManagement/ValidationAccountManagement";
+import { useAppDispatch } from "src/Redux/Hooks/Hooks";
+import { setSnackbar } from "src/Redux/Slices/snackbarSlice";
 
 import { FormField } from "../../Form/FormField";
 import { CommonForm } from "../../Form/CommonForm";
 import { UserAvatar } from "../UserAvatar/UserAvatar";
 
-export const Account = ({ session }) => {
-  const [progress, setProgress] = useState(false);
-  const [username, setUsername] = useState(null);
-  const [website, setWebsite] = useState(null);
-  const [avatar_url, setAvatarUrl] = useState(null);
+import Button from "@mui/material/Button";
 
-  const [avatar, setAvatar] = useState(null);
-  const onFileChange = (event) => {
-    if (event.currentTarget.files) {
-      const file = event.currentTarget.files[0];
-      setAvatar(file);
-    }
-  };
+export const Account = ({ session }) => {
+  const dispatch = useAppDispatch();
+  const [progress, setProgress] = useState(false);
 
   useEffect(() => {
     getProfile();
@@ -43,9 +37,10 @@ export const Account = ({ session }) => {
         .single();
 
       if (data) {
-        setUsername(data.username);
-        setWebsite(data.website);
-        setAvatarUrl(data.avatar_url);
+        console.log("data", data);
+        formik.setFieldValue("username", data.username);
+        formik.setFieldValue("website", data.website);
+        formik.setFieldValue("avatar", data.avatar_url);
       }
     } catch (error) {
       alert(error.message);
@@ -58,27 +53,28 @@ export const Account = ({ session }) => {
     initialValues: {
       username: "",
       website: "",
-      avatar_url: null,
+      avatar: null,
     },
+    enableReinitialize: true,
     validationSchema: yup.object().shape({
       username: usernameValidation,
       website: websiteValidation,
-      avatar_url: avatarURLValidation,
+      avatar: avatarURLValidation,
     }),
     onSubmit: async (values) => {
       try {
         setProgress(true);
         const user = supabase.auth.user();
 
-        if (avatar) {
-          const file = avatar.name;
+        if (values.avatar) {
+          const file = values.avatar.name;
           const fileExt = file.split(".").pop();
           const fileName = `${Math.random()}.${fileExt}`;
           const filePath = `${fileName.slice(2)}`;
 
           let { error: uploadError } = await supabase.storage
             .from("avatars")
-            .upload(filePath, avatar);
+            .upload(filePath, values.avatar);
 
           const { signedURL } = await supabase.storage
             .from("avatars")
@@ -95,30 +91,68 @@ export const Account = ({ session }) => {
           let { error } = await supabase
             .from("profiles")
             .upsert(updates, { returning: "minimal" });
-        }
 
-        const updates = {
-          id: user.id,
-          updated_at: new Date(),
-          username: values.username,
-          avatar_url: user.avatar_url,
-          website: values.website,
-        };
+          if (error) {
+            throw error;
+          }
+        } else {
+          const updates = {
+            id: user.id,
+            updated_at: new Date(),
+            username: values.username,
+            avatar_url: user.avatar_url,
+            website: values.website,
+          };
 
-        let { error } = await supabase
-          .from("profiles")
-          .upsert(updates, { returning: "minimal" });
+          let { error } = await supabase
+            .from("profiles")
+            .upsert(updates, { returning: "minimal" });
 
-        if (error) {
-          throw error;
+          if (error) {
+            throw error;
+          }
         }
       } catch (error) {
         alert(error.message);
       } finally {
         setProgress(false);
+        dispatch(
+          setSnackbar([true, "success", "You have updated your profile"])
+        );
       }
     },
   });
+
+  const onFileChange = (event) => {
+    if (event.currentTarget.files) {
+      formik.setFieldValue("avatar", event.currentTarget.files[0]);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!formik.values.avatar) {
+      return dispatch(setSnackbar([true, "warning", "Add a picture first"]));
+    }
+
+    const user = supabase.auth.user();
+    const updates = {
+      id: user.id,
+      updated_at: new Date(),
+      username: user.username,
+      avatar_url: null,
+      website: user.website,
+    };
+    let { error } = await supabase
+      .from("profiles")
+      .upsert(updates, { returning: "minimal" });
+
+    const removeFile = formik.values.avatar.split("?").shift().split("/").pop();
+
+    const { data } = await supabase.storage
+      .from("avatars")
+      .remove([removeFile]);
+    dispatch(setSnackbar([true, "success", "The photo has been deleted"]));
+  };
 
   return (
     <ProtectedRoute>
@@ -126,32 +160,36 @@ export const Account = ({ session }) => {
         formik={formik}
         progress={progress}
         icon={
-          <UserAvatar
-            name={avatar_url}
-            url={avatar_url}
-            onFileChange={onFileChange}
-          />
+          <>
+            <UserAvatar
+              name={formik.values.avatar}
+              url={formik.values.avatar}
+              onFileChange={onFileChange}
+            />
+            <Button variant="outlined" onClick={handleDelete}>
+              Delete photo
+            </Button>
+          </>
         }
         header="Your profile"
         formBody={
           <>
             <FormField
               name="username"
-              label={username ? username : "Your Name"}
+              label={
+                formik.values.username ? formik.values.username : "Your Name"
+              }
               formik={formik}
             />
             <FormField
               name="website"
-              label={website ? website : "your@website.com"}
+              label={
+                formik.values.website
+                  ? formik.values.website
+                  : "your@website.com"
+              }
               formik={formik}
             />
-            {/* <input
-              name="avatar_url"
-              label="Your image"
-              type="file"
-              formik={formik}
-              onChange={onFileChange}
-            /> */}
           </>
         }
         buttonText="Update Profile"

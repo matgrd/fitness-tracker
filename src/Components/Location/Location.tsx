@@ -1,14 +1,40 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import { useGeoLocation } from "./useGeoLocation";
 import { useWatchPosition } from "./useWatchPosition";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import { containerStyle, options } from "./Settings";
 import { Loading } from "../Loading/Loading";
+import { supabase } from "src/supabaseClient";
+
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
 
 export const Location = () => {
   const location = useGeoLocation();
   const parameters = useWatchPosition();
+  const user: any = supabase.auth.user();
+  const [currentTrainingId, setCurrentTrainingId] = useState("");
+
+  const updateTraining = async () => {
+    if (currentTrainingId !== "") {
+      const updates = {
+        training_id: currentTrainingId,
+        latitude: parameters.data.latitude,
+        longitude: parameters.data.longitude,
+        count: new Date(),
+      };
+
+      let { error } = await supabase
+        .from("training")
+        .upsert(updates, { returning: "minimal" });
+    }
+  };
+
+  useEffect(() => {
+    updateTraining()
+  }, [parameters]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -32,6 +58,31 @@ export const Location = () => {
     lng: parameters.data.longitude,
   };
 
+  const handleStart = async () => {
+    const updates = {
+      user: user.id,
+      training_name: "name",
+      type_of_training: "type",
+      start_of_training: new Date(),
+    };
+
+    let { data, error } = await supabase
+      .from("userTraining")
+      .upsert(updates)
+      .single();
+      console.log(data)
+      console.log(error)
+    setCurrentTrainingId(data.id);
+  };
+
+  const handleEnd = async () => {
+    const { data, error } = await supabase
+      .from("userTraining")
+      .update({ end_of_training: new Date() })
+      .match({ user: user.id });
+    setCurrentTrainingId("");
+  };
+
   return (
     <ProtectedRoute>
       <>
@@ -48,6 +99,42 @@ export const Location = () => {
               : "Parameters data not available yet"}
           </p>
         </div>
+        <Container
+          component="div"
+          maxWidth="xl"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 10,
+            marginBottom: 5,
+          }}
+        >
+          {currentTrainingId === "" ? (
+            <Stack spacing={2} direction="row">
+              <Button
+                style={{ width: 75 }}
+                variant="contained"
+                color="secondary"
+                onClick={handleStart}
+                type="submit"
+              >
+                Start
+              </Button>
+            </Stack>
+          ) : (
+            <Stack spacing={2} direction="row">
+              <Button
+                style={{ width: 75 }}
+                variant="contained"
+                color="secondary"
+                onClick={handleEnd}
+                type="submit"
+              >
+                End
+              </Button>
+            </Stack>
+          )}
+        </Container>
         {isLoaded ? (
           <GoogleMap
             mapContainerStyle={containerStyle}

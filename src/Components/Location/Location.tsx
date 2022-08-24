@@ -17,25 +17,23 @@ export const Location = () => {
   const user: any = supabase.auth.user();
   const [currentTrainingId, setCurrentTrainingId] = useState("");
 
-  const updateTraining = async () => {
+  setInterval(async () => {
     if (currentTrainingId !== "") {
-      setInterval(async () => {
-        let { error } = await supabase.from("training").insert(
-          {
-            training_id: currentTrainingId,
-            latitude: parameters.data.latitude,
-            longitude: parameters.data.longitude,
-            count: new Date(),
-          },
-          { returning: "minimal" }
-        );
-      }, 5000);
+      let { error } = await supabase.from("training").insert(
+        {
+          training_id: currentTrainingId,
+          latitude: parameters.data.latitude,
+          longitude: parameters.data.longitude,
+          count: new Date(),
+        },
+        { returning: "minimal" }
+      );
     }
-  };
+  }, 10000);
 
-  useEffect(() => {
-    updateTraining();
-  }, [parameters]);
+  // useEffect(() => {
+  //   updateTraining();
+  // }, [parameters]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",

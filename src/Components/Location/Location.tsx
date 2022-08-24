@@ -19,21 +19,22 @@ export const Location = () => {
 
   const updateTraining = async () => {
     if (currentTrainingId !== "") {
-      const updates = {
-        training_id: currentTrainingId,
-        latitude: parameters.data.latitude,
-        longitude: parameters.data.longitude,
-        count: new Date(),
-      };
-
-      let { error } = await supabase
-        .from("training")
-        .upsert(updates, { returning: "minimal" });
+      setInterval(async () => {
+        let { error } = await supabase.from("training").insert(
+          {
+            training_id: currentTrainingId,
+            latitude: parameters.data.latitude,
+            longitude: parameters.data.longitude,
+            count: new Date(),
+          },
+          { returning: "minimal" }
+        );
+      }, 5000);
     }
   };
 
   useEffect(() => {
-    updateTraining()
+    updateTraining();
   }, [parameters]);
 
   const { isLoaded } = useJsApiLoader({
@@ -70,8 +71,6 @@ export const Location = () => {
       .from("userTraining")
       .upsert(updates)
       .single();
-      console.log(data)
-      console.log(error)
     setCurrentTrainingId(data.id);
   };
 

@@ -26,8 +26,8 @@ export const Location = () => {
   console.log("oldLongitude", oldLongitude);
 
   if (parameters.loaded) {
-    const latitudeToFixed = parameters.data.latitude.toFixed(1);
-    const longitudeToFixed = parameters.data.longitude.toFixed(1);
+    const latitudeToFixed = parameters.data.latitude.toFixed(4);
+    const longitudeToFixed = parameters.data.longitude.toFixed(4);
 
     oldLatitude.current = latitudeToFixed;
     oldLongitude.current = longitudeToFixed;

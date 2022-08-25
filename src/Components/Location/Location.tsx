@@ -16,6 +16,16 @@ export const Location = () => {
   const parameters = useWatchPosition();
   const user: any = supabase.auth.user();
   const [currentTrainingId, setCurrentTrainingId] = useState("");
+  const [geographicalCoordinates, setGeographicalCoordinates] = useState<any>(
+    []
+  );
+  console.log(geographicalCoordinates);
+
+  if (parameters.loaded) {
+    const latitudeToFixed = parameters.data.latitude.toFixed(1);
+    const longitudeToFixed = parameters.data.longitude.toFixed(1);
+    setGeographicalCoordinates([latitudeToFixed, longitudeToFixed]);
+  }
 
   // setInterval(async () => {
   //   if (parameters && currentTrainingId !== "") {

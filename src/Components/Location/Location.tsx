@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import ProtectedRoute from "../ProtectedRoute/ProtectedRoute";
 import { useGeoLocation } from "./useGeoLocation";
 import { useWatchPosition } from "./useWatchPosition";
@@ -17,15 +17,38 @@ export const Location = () => {
   const user: any = supabase.auth.user();
   const [currentTrainingId, setCurrentTrainingId] = useState("");
   const [geographicalCoordinates, setGeographicalCoordinates] = useState<any>(
-    []
+    {}
   );
-  console.log(geographicalCoordinates);
+  const oldLatitude = useRef();
+  const oldLongitude = useRef();
+  // console.log(geographicalCoordinates);
+  console.log("oldLatitude", oldLatitude);
+  console.log("oldLongitude", oldLongitude);
 
   if (parameters.loaded) {
     const latitudeToFixed = parameters.data.latitude.toFixed(1);
     const longitudeToFixed = parameters.data.longitude.toFixed(1);
-    setGeographicalCoordinates([latitudeToFixed, longitudeToFixed]);
+
+    oldLatitude.current = latitudeToFixed;
+    oldLongitude.current = longitudeToFixed;
+    if (
+      latitudeToFixed !== oldLatitude.current ||
+      longitudeToFixed !== oldLongitude.current
+    ) {
+      setGeographicalCoordinates({
+        latitude: latitudeToFixed,
+        longitude: longitudeToFixed,
+      });
+    }
   }
+
+  // const valueMemoized = useMemo(
+  //   () => ({
+  //     data: oneProp,
+  //     data2: anotherProp,
+  //   }),
+  //   [oneProp, anotherProp],
+  // );
 
   // setInterval(async () => {
   //   if (parameters && currentTrainingId !== "") {
@@ -63,7 +86,7 @@ export const Location = () => {
 
   useEffect(() => {
     updateTraining();
-  }, [parameters]);
+  }, [geographicalCoordinates]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",

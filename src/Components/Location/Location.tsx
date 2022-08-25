@@ -15,68 +15,52 @@ export const Location = () => {
   const location = useGeoLocation();
   const parameters = useWatchPosition();
   const user: any = supabase.auth.user();
+
   const [currentTrainingId, setCurrentTrainingId] = useState("");
-  const [geographicalCoordinates, setGeographicalCoordinates] = useState<any>(
-    {}
-  );
+  const [latitude, setLatitude] = useState<number>(0);
+  const [longitude, setLongitude] = useState<number>(0);
+  // console.log("latitude", latitude);
+  // console.log("longitude", longitude);
+
   const oldLatitude = useRef();
   const oldLongitude = useRef();
-  // console.log(geographicalCoordinates);
-  console.log("oldLatitude", oldLatitude);
-  console.log("oldLongitude", oldLongitude);
+  // console.log("oldLatitude", oldLatitude);
+  // console.log("oldLongitude", oldLongitude);
 
-  if (parameters.loaded) {
-    const latitudeToFixed = parameters.data.latitude.toFixed(4);
-    const longitudeToFixed = parameters.data.longitude.toFixed(4);
+  const checkGeographicalCoordinates = () => {
+    if (parameters.loaded) {
+      const latitudeToFixed = parameters.data.latitude.toFixed(4);
+      const longitudeToFixed = parameters.data.longitude.toFixed(4);
 
-    oldLatitude.current = latitudeToFixed;
-    oldLongitude.current = longitudeToFixed;
-    if (
-      latitudeToFixed !== oldLatitude.current ||
-      longitudeToFixed !== oldLongitude.current
-    ) {
-      setGeographicalCoordinates({
-        latitude: latitudeToFixed,
-        longitude: longitudeToFixed,
-      });
+      oldLatitude.current = latitudeToFixed;
+      oldLongitude.current = longitudeToFixed;
+
+      if (latitude === 0) {
+        setLatitude(latitudeToFixed);
+      }
+      if (longitude === 0) {
+        setLongitude(longitudeToFixed);
+      }
+
+      if (latitudeToFixed !== oldLatitude.current) {
+        setLatitude(latitudeToFixed);
+        oldLatitude.current = latitudeToFixed;
+      }
+
+      if (longitudeToFixed !== oldLongitude.current) {
+        setLatitude(longitudeToFixed);
+        oldLongitude.current = longitudeToFixed;
+      }
     }
-  }
-
-  // const valueMemoized = useMemo(
-  //   () => ({
-  //     data: oneProp,
-  //     data2: anotherProp,
-  //   }),
-  //   [oneProp, anotherProp],
-  // );
-
-  // setInterval(async () => {
-  //   if (parameters && currentTrainingId !== "") {
-  //     const latitudeToFixed = parameters.data.latitude.toFixed(1);
-  //     const longitudeToFixed = parameters.data.longitude.toFixed(1);
-  //     console.log("10 sekund");
-  //     let { error } = await supabase.from("training").insert(
-  //       {
-  //         training_id: currentTrainingId,
-  //         latitude: latitudeToFixed,
-  //         longitude: longitudeToFixed,
-  //         count: new Date(),
-  //       },
-  //       { returning: "minimal" }
-  //     );
-  //   }
-  // }, 10000);
+  };
 
   const updateTraining = async () => {
-    if (parameters && currentTrainingId !== "") {
-      const latitudeToFixed = parameters.data.latitude.toFixed(1);
-      const longitudeToFixed = parameters.data.longitude.toFixed(1);
-
+    if (currentTrainingId !== "") {
       let { error } = await supabase.from("training").insert(
         {
           training_id: currentTrainingId,
-          latitude: latitudeToFixed,
-          longitude: longitudeToFixed,
+          latitude: latitude,
+          longitude: longitude,
           count: new Date(),
         },
         { returning: "minimal" }
@@ -85,8 +69,12 @@ export const Location = () => {
   };
 
   useEffect(() => {
+    checkGeographicalCoordinates();
+  }, [parameters]);
+
+  useEffect(() => {
     updateTraining();
-  }, [geographicalCoordinates]);
+  }, [latitude, longitude]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",

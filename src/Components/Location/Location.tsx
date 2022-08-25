@@ -17,23 +17,43 @@ export const Location = () => {
   const user: any = supabase.auth.user();
   const [currentTrainingId, setCurrentTrainingId] = useState("");
 
-  setInterval(async () => {
-    if (currentTrainingId !== "") {
+  // setInterval(async () => {
+  //   if (parameters && currentTrainingId !== "") {
+  //     const latitudeToFixed = parameters.data.latitude.toFixed(1);
+  //     const longitudeToFixed = parameters.data.longitude.toFixed(1);
+  //     console.log("10 sekund");
+  //     let { error } = await supabase.from("training").insert(
+  //       {
+  //         training_id: currentTrainingId,
+  //         latitude: latitudeToFixed,
+  //         longitude: longitudeToFixed,
+  //         count: new Date(),
+  //       },
+  //       { returning: "minimal" }
+  //     );
+  //   }
+  // }, 10000);
+
+  const updateTraining = async () => {
+    if (parameters && currentTrainingId !== "") {
+      const latitudeToFixed = parameters.data.latitude.toFixed(1);
+      const longitudeToFixed = parameters.data.longitude.toFixed(1);
+
       let { error } = await supabase.from("training").insert(
         {
           training_id: currentTrainingId,
-          latitude: parameters.data.latitude,
-          longitude: parameters.data.longitude,
+          latitude: latitudeToFixed,
+          longitude: longitudeToFixed,
           count: new Date(),
         },
         { returning: "minimal" }
       );
     }
-  }, 10000);
+  };
 
-  // useEffect(() => {
-  //   updateTraining();
-  // }, [parameters]);
+  useEffect(() => {
+    updateTraining();
+  }, [parameters]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",

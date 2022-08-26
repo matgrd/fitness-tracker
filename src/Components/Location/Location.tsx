@@ -17,20 +17,20 @@ export const Location = () => {
   const user: any = supabase.auth.user();
 
   const [currentTrainingId, setCurrentTrainingId] = useState("");
-  const [latitude, setLatitude] = useState<number>(0);
-  const [longitude, setLongitude] = useState<number>(0);
-  // console.log("latitude", latitude);
-  // console.log("longitude", longitude);
+  const [latitude, setLatitude] = useState(0);
+  const [longitude, setLongitude] = useState(0);
+  console.log("latitude", latitude);
+  console.log("longitude", longitude);
 
   const oldLatitude = useRef();
   const oldLongitude = useRef();
-  // console.log("oldLatitude", oldLatitude);
-  // console.log("oldLongitude", oldLongitude);
+  console.log("oldLatitude", oldLatitude);
+  console.log("oldLongitude", oldLongitude);
 
   const checkGeographicalCoordinates = () => {
     if (parameters.loaded) {
-      const latitudeToFixed = parameters.data.latitude.toFixed(4);
-      const longitudeToFixed = parameters.data.longitude.toFixed(4);
+      const latitudeToFixed = parameters.data.latitude;
+      const longitudeToFixed = parameters.data.longitude;
 
       oldLatitude.current = latitudeToFixed;
       oldLongitude.current = longitudeToFixed;

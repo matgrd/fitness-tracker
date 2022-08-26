@@ -17,39 +17,44 @@ export const Location = () => {
   const user: any = supabase.auth.user();
 
   const [currentTrainingId, setCurrentTrainingId] = useState("");
-  const [latitude, setLatitude] = useState(0);
-  const [longitude, setLongitude] = useState(0);
-  console.log("latitude", latitude);
-  console.log("longitude", longitude);
+  const [geographicalCoordinates, setGeographicalCoordinates] = useState({
+    latitude: 0,
+    longitude: 0,
+  });
 
   const oldLatitude = useRef();
   const oldLongitude = useRef();
+  console.log("geographicalCoordinates", geographicalCoordinates);
   console.log("oldLatitude", oldLatitude);
   console.log("oldLongitude", oldLongitude);
 
-  const checkGeographicalCoordinates = () => {
+  const updateGeographicalCoordinates = () => {
     if (parameters.loaded) {
-      const latitudeToFixed = parameters.data.latitude;
-      const longitudeToFixed = parameters.data.longitude;
+      const latitude = parameters.data.latitude;
+      const longitude = parameters.data.longitude;
 
-      oldLatitude.current = latitudeToFixed;
-      oldLongitude.current = longitudeToFixed;
-
-      if (latitude === 0) {
-        setLatitude(latitudeToFixed);
-      }
-      if (longitude === 0) {
-        setLongitude(longitudeToFixed);
-      }
-
-      if (latitudeToFixed !== oldLatitude.current) {
-        setLatitude(latitudeToFixed);
-        oldLatitude.current = latitudeToFixed;
+      if (
+        geographicalCoordinates.latitude === 0 ||
+        geographicalCoordinates.longitude === 0
+      ) {
+        setGeographicalCoordinates({
+          latitude: latitude,
+          longitude: longitude,
+        });
+        oldLatitude.current = latitude;
+        oldLongitude.current = longitude;
       }
 
-      if (longitudeToFixed !== oldLongitude.current) {
-        setLatitude(longitudeToFixed);
-        oldLongitude.current = longitudeToFixed;
+      if (
+        geographicalCoordinates.latitude !== oldLatitude.current ||
+        geographicalCoordinates.longitude !== oldLongitude.current
+      ) {
+        setGeographicalCoordinates({
+          latitude: latitude,
+          longitude: longitude,
+        });
+        oldLatitude.current = latitude;
+        oldLongitude.current = longitude;
       }
     }
   };
@@ -59,8 +64,8 @@ export const Location = () => {
       let { error } = await supabase.from("training").insert(
         {
           training_id: currentTrainingId,
-          latitude: latitude,
-          longitude: longitude,
+          latitude: geographicalCoordinates.latitude,
+          longitude: geographicalCoordinates.longitude,
           count: new Date(),
         },
         { returning: "minimal" }
@@ -69,12 +74,12 @@ export const Location = () => {
   };
 
   useEffect(() => {
-    checkGeographicalCoordinates();
+    updateGeographicalCoordinates();
   }, [parameters]);
 
   useEffect(() => {
     updateTraining();
-  }, [latitude, longitude]);
+  }, [geographicalCoordinates]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",

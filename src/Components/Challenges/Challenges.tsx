@@ -60,6 +60,13 @@ export const Challenges = () => {
         .select(`first_challenge, second_challenge, third_challenge`)
         .eq("user", user.id)
         .single();
+      // let { data, error } = await supabase
+      //   .from("userChallenges")
+      //   .select(`challenges!userChallenges_first_challenge_fkey (*)`)
+      //   .eq("user", user.id);
+      // console.log(data);
+      // console.log(error);
+
       setUserChallenges(userChallenges);
     };
     fetchUserChallenges();
@@ -78,10 +85,10 @@ export const Challenges = () => {
     let date = new Date();
 
     if (
-      date.getDay() === 6 &&
-      date.getHours() === 11 &&
-      date.getMinutes() === 25 &&
-      date.getSeconds() === 1
+      date.getDay() === 1 &&
+      date.getHours() === 20 &&
+      date.getMinutes() === 2 &&
+      date.getSeconds() === 0
     ) {
       console.log("Today is Monday");
 

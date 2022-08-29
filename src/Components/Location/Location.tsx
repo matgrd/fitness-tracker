@@ -17,55 +17,51 @@ export const Location = () => {
   const user: any = supabase.auth.user();
 
   const [currentTrainingId, setCurrentTrainingId] = useState("");
-  const [geographicalCoordinates, setGeographicalCoordinates] = useState({
-    latitude: 0,
-    longitude: 0,
-  });
+  const [watchCounter, setWatchCounter] = useState(0);
+  const [prevGeographicalCoordinates, setPrevGeographicalCoordinates] =
+    useState({
+      latitude: 0,
+      longitude: 0,
+    });
 
-  const oldLatitude = useRef();
-  const oldLongitude = useRef();
-  console.log("geographicalCoordinates", geographicalCoordinates);
-  console.log("oldLatitude", oldLatitude);
-  console.log("oldLongitude", oldLongitude);
-
-  const updateGeographicalCoordinates = () => {
+  const addTraceData = async () => {
     if (parameters.loaded) {
-      const latitude = parameters.data.latitude;
-      const longitude = parameters.data.longitude;
+      const { latitude, longitude } = parameters.data; //najnowsze
 
-      if (
-        geographicalCoordinates.latitude === 0 ||
-        geographicalCoordinates.longitude === 0
-      ) {
-        setGeographicalCoordinates({
-          latitude: latitude,
-          longitude: longitude,
-        });
-        oldLatitude.current = latitude;
-        oldLongitude.current = longitude;
-      }
-
-      if (
-        geographicalCoordinates.latitude !== oldLatitude.current ||
-        geographicalCoordinates.longitude !== oldLongitude.current
-      ) {
-        setGeographicalCoordinates({
-          latitude: latitude,
-          longitude: longitude,
-        });
-        oldLatitude.current = latitude;
-        oldLongitude.current = longitude;
+      // pierwszy przypadek nie ma z czym porwnac -> wpisuje
+      if (watchCounter === 0) {
+        //wpisac do bazy
+        await updateTraining({ lat: latitude, long: longitude });
+        setPrevGeographicalCoordinates({ latitude, longitude });
+        setWatchCounter(1);
+      } else {
+        // następny porownuje z poprzednim jesli taki sam nie wpisuje
+        if (
+          latitude.toFixed(6) !==
+            prevGeographicalCoordinates.latitude.toFixed(6) &&
+          longitude.toFixed(6) !==
+            prevGeographicalCoordinates.longitude.toFixed(6)
+        ) {
+          await updateTraining({ lat: latitude, long: longitude });
+          setPrevGeographicalCoordinates({ latitude, longitude });
+        }
       }
     }
   };
 
-  const updateTraining = async () => {
+  const updateTraining = async ({
+    lat,
+    long,
+  }: {
+    lat: string;
+    long: string;
+  }) => {
     if (currentTrainingId !== "") {
       let { error } = await supabase.from("training").insert(
         {
           training_id: currentTrainingId,
-          latitude: geographicalCoordinates.latitude,
-          longitude: geographicalCoordinates.longitude,
+          latitude: lat,
+          longitude: long,
           count: new Date(),
         },
         { returning: "minimal" }
@@ -74,12 +70,8 @@ export const Location = () => {
   };
 
   useEffect(() => {
-    updateGeographicalCoordinates();
-  }, [parameters]);
-
-  useEffect(() => {
-    updateTraining();
-  }, [geographicalCoordinates]);
+    addTraceData();
+  }, [parameters, currentTrainingId]);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -124,6 +116,7 @@ export const Location = () => {
       .update({ end_of_training: new Date() })
       .match({ user: user.id });
     setCurrentTrainingId("");
+    setWatchCounter(0);
   };
 
   return (
